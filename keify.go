@@ -9,6 +9,8 @@ func Keify(s string) string {
 	tmp = strings.ToLower(s)
 	tmp = strings.Replace(tmp, " ", "_", -1)
 	tmp = strings.Replace(tmp, "'", "_", -1)
+	tmp = strings.Replace(tmp, "(", "_", -1)
+	tmp = strings.Replace(tmp, ")", "_", -1)
 
 	return tmp
 
