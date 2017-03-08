@@ -29,3 +29,13 @@ func IsIn(a string, ss ...string) bool {
 	}
 	return false
 }
+
+// IsIn returns true iff s is in ss
+func IsInInt(a int, ss ...int) bool {
+	for _, s := range ss {
+		if s == a {
+			return true
+		}
+	}
+	return false
+}
