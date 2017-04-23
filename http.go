@@ -123,5 +123,5 @@ func (hc *HTTPConnection) PatchWithAuth(url string, payload interface{}) (*http.
 
 // GetWithAuth - SendWithAuth with GET
 func (hc *HTTPConnection) GetWithAuth(url string) (*http.Response, []byte, error) {
-	return hc.Send(url, nil, "PATCH")
+	return hc.Send(url, nil, "GET")
 }
