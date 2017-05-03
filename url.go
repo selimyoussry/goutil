@@ -1,7 +1,10 @@
 package goutil
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
+	"net/url"
 	"strings"
 )
 
@@ -38,6 +41,17 @@ func URLJoin(ss ...string) *URL {
 }
 
 // SetURLParameter sets one parameters
+func (u *URL) SetURLJSONParameter(key string, value interface{}) *URL {
+	b, err := json.Marshal(value)
+	if err != nil {
+		log.Fatalf("%v", Pretty(err))
+	}
+
+	u.GetParameters[key] = string(b)
+	return u
+}
+
+// SetURLParameter sets one parameters
 func (u *URL) SetURLParameter(key string, value interface{}) *URL {
 	u.GetParameters[key] = value
 	return u
@@ -53,24 +67,19 @@ func (u *URL) SetURLParameters(params map[string]interface{}) *URL {
 
 // Format creates the complete URL
 func (u *URL) Format() string {
-	if len(u.GetParameters) == 0 {
-		return u.URL
+	_u, err := url.Parse(u.URL)
+	if err != nil {
+		log.Fatalf("%s", Pretty(err))
 	}
 
-	kv := []string{}
-	for k, v := range u.GetParameters {
-		vStr := fmt.Sprintf("%v", v)
-		var s string
-		if (vStr == "") || (v == nil) {
-			s = k
-		} else {
-			s = fmt.Sprintf("%s=%s", k, vStr)
-		}
-
-		kv = append(kv, s)
+	q := _u.Query()
+	for key, value := range u.GetParameters {
+		q.Set(key, fmt.Sprintf("%v", value))
 	}
 
-	return fmt.Sprintf("%s?%s", u.URL, strings.Join(kv, "&"))
+	_u.RawQuery = q.Encode()
+
+	return _u.String()
 }
 
 // urlJoinRemoveExtremeSlashes removes first and last slash of a URL part

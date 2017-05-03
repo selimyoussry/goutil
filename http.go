@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/hippoai/goerr"
@@ -27,15 +28,15 @@ func ErrHTTPRequest(statusCode int, responseDataString string, response *http.Re
 
 // HTTPConnection
 type HTTPConnection struct {
-	Token             *string `json:"token"`
-	AuthorizationType *string `json:"authorizationType"`
-	TimeoutSeconds    int     `json:"timeoutSeconds"`
+	Token             *string       `json:"token"`
+	AuthorizationType *string       `json:"authorizationType"`
+	TimeoutSeconds    time.Duration `json:"timeoutSeconds"`
 }
 
 // NewHTTPConnection instanciates
 func NewHTTPConnection() *HTTPConnection {
 	return &HTTPConnection{
-		TimeoutSeconds: DefaultHTTPTimeoutSeconds,
+		TimeoutSeconds: time.Duration(DefaultHTTPTimeoutSeconds),
 	}
 }
 
@@ -48,8 +49,56 @@ func (hc *HTTPConnection) SetAuthorization(authorizationType, token string) *HTT
 
 // SetTimeoutSeconds overwrites the timeout for the connection
 func (hc *HTTPConnection) SetTimeoutSeconds(t int) *HTTPConnection {
-	hc.TimeoutSeconds = t
+	hc.TimeoutSeconds = time.Duration(t)
 	return hc
+}
+
+// SendRaw -
+func (hc *HTTPConnection) SendRaw(url string, payload []byte, method string, isJSON bool) (*http.Response, []byte, error) {
+
+	// Net client with a timeout
+	netClient := &http.Client{
+		Timeout: time.Second * hc.TimeoutSeconds,
+	}
+
+	// Create the http request
+	req, err := http.NewRequest(method, url, strings.NewReader(string(payload)))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if isJSON {
+		// Set JSON header
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	// Set authorization header
+	if hc.Token != nil {
+		req.Header.Set("Authorization", fmt.Sprintf("%s %s", *hc.AuthorizationType, *hc.Token))
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// Get the response
+	resp, err := netClient.Do(req)
+
+	if err != nil {
+		return nil, nil, err
+	}
+	defer resp.Body.Close()
+
+	// Parse the body
+	respBodyBytesArray, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Make sure the response status is correct
+	if resp.StatusCode != http.StatusOK {
+		return nil, nil, ErrHTTPRequest(resp.StatusCode, string(respBodyBytesArray), resp)
+	}
+
+	return resp, respBodyBytesArray, nil
 }
 
 // Send a payload and get the response
@@ -57,7 +106,7 @@ func (hc *HTTPConnection) Send(url string, payload interface{}, method string) (
 
 	// Net client with a timeout
 	netClient := &http.Client{
-		Timeout: time.Second * 10,
+		Timeout: time.Second * hc.TimeoutSeconds,
 	}
 
 	// Marshal the body into a bytes array
@@ -67,7 +116,13 @@ func (hc *HTTPConnection) Send(url string, payload interface{}, method string) (
 	}
 
 	// Create the http request
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(b))
+	var req *http.Request
+	if payload == nil {
+		req, err = http.NewRequest(method, url, nil)
+	} else {
+		req, err = http.NewRequest(method, url, bytes.NewBuffer(b))
+	}
+
 	if err != nil {
 		return nil, nil, err
 	}
@@ -82,6 +137,7 @@ func (hc *HTTPConnection) Send(url string, payload interface{}, method string) (
 
 	// Get the response
 	resp, err := netClient.Do(req)
+
 	if err != nil {
 		return nil, nil, err
 	}
