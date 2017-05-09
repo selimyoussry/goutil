@@ -16,16 +16,21 @@ type CypherSets struct {
 	Props    map[string]interface{} `json:"props"`
 }
 
-func (cs *CypherSets) MakeString() string {
-	if len(cs.Sets) == 0 {
-		return ""
+func CypherSetsMakeString(css ...*CypherSets) string {
+	joined := []string{}
+
+	for _, cs := range css {
+
+		for _, cypherSet := range cs.Sets {
+			joined = append(joined, fmt.Sprintf(
+				"%s.%s = {props}.%s", cs.NodeName, cypherSet.Key, cypherSet.PropertyName,
+			))
+		}
+
 	}
 
-	joined := []string{}
-	for _, cypherSet := range cs.Sets {
-		joined = append(joined, fmt.Sprintf(
-			"%s.%s = {props}.%s", cs.NodeName, cypherSet.Key, cypherSet.PropertyName,
-		))
+	if len(joined) == 0 {
+		return ""
 	}
 
 	return fmt.Sprintf("SET %s", strings.Join(joined, ", "))
