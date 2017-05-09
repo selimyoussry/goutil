@@ -74,7 +74,7 @@ func (u *URL) Format() string {
 
 	q := _u.Query()
 	for key, value := range u.GetParameters {
-		q.Set(key, fmt.Sprintf("%v", value))
+		q.Set(key, fmt.Sprintf("%v", DefaultIfNull(value, "")))
 	}
 
 	_u.RawQuery = q.Encode()
