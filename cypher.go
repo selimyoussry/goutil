@@ -17,6 +17,10 @@ type CypherSets struct {
 }
 
 func (cs *CypherSets) MakeString() string {
+	if len(cs.Sets) == 0 {
+		return ""
+	}
+
 	joined := []string{}
 	for _, cypherSet := range cs.Sets {
 		joined = append(joined, fmt.Sprintf(
