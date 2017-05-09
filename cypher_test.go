@@ -14,8 +14,8 @@ func TestCypherSet(t *testing.T) {
 	agePtr = nil
 
 	cs.
-		AddString("personName", "name", &name).
-		AddFloat64("personAge", "age", agePtr)
+		AddIfNotNull("personName", "name", &name).
+		AddIfNotNull("personAge", "age", agePtr)
 
 	if _, exists := cs.Props["personAge"]; exists {
 		t.Errorf("Should not have %s in props \n", "personAge")
