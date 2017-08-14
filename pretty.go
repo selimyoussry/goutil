@@ -10,3 +10,13 @@ func Pretty(x interface{}) string {
 	}
 	return string(b)
 }
+
+func Bitify(x interface{}) []byte {
+	b, _ := json.Marshal(x)
+	return b
+}
+
+func Stringify(x interface{}) string {
+	b, _ := json.Marshal(x)
+	return string(b)
+}
