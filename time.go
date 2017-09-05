@@ -14,3 +14,9 @@ func UnixTimestampMilliseconds(t time.Time) int64 {
 
 	return timestampMS
 }
+
+func TimeCopy(t time.Time) time.Time {
+	formattedTime := t.Format(time.RFC3339Nano)
+	newT, _ := time.Parse(time.RFC3339Nano, formattedTime)
+	return newT
+}
