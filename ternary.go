@@ -12,6 +12,15 @@ func TerString(cond bool, _true, _false string) string {
 }
 
 // Implements cond ? _true : _false
+func TerBytes(cond bool, _true, _false []byte) []byte {
+	if cond {
+		return _true
+	}
+
+	return _false
+}
+
+// Implements cond ? _true : _false
 func TerTime(cond bool, _true, _false time.Time) time.Time {
 	if cond {
 		return _true

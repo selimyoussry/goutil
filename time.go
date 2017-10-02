@@ -4,6 +4,16 @@ import (
 	"time"
 )
 
+func MillisecondsToTime(timestamp_ms int64) time.Time {
+
+	milliToNano := int64(1000 * 1000)
+	milliseconds := timestamp_ms % 1000
+	nanoseconds := milliseconds * milliToNano
+	seconds := (timestamp_ms - milliseconds) / 1000
+
+	return time.Unix(seconds, nanoseconds).UTC()
+}
+
 func UnixTimestampMilliseconds(t time.Time) int64 {
 
 	nanoToMilli := int64(1000 * 1000)

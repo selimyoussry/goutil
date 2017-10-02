@@ -18,4 +18,9 @@ func TestTime(t *testing.T) {
 	if timestampMS != expected {
 		t.Errorf("Wrong timestamp, got %v, expected %v", timestampMS, expected)
 	}
+
+	t2 := MillisecondsToTime(expected)
+	if t2.UnixNano() != tObject.UnixNano() {
+		t.Errorf("Wrong conversion, got %v, expected %v", t2, tObject)
+	}
 }
